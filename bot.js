@@ -117,11 +117,18 @@ bot.on('message', function (user, userID, channelID, message, evt, nickname, rol
 
 function Nomination(message, nick){
     var n = message.indexOf("https://");
+    var m = message.indexOf("https://", (n+1))
     nom=message.slice(4,n);
     itemLog=nameLog=true;
     
     if (n == (-1)) {
         nomLog = ("Entry not added, link not found")
+        return nomLog
+    }
+    
+
+    if (m != (-1)) {
+        nomLog = ("Entry not added, please nom only one link")
         return nomLog
     }
 
@@ -173,7 +180,8 @@ function ClearNom(){ //Clears all nominations and names from the database
 
 function Item (nom) { //pushes the nomination to the list
     //nomList[numNom] = nom;
-    nomList.push(nom)
+    nom = nom.replace(/`|\n/g, "");
+    nomList.push(nom);
     return;
 }
 
@@ -233,7 +241,7 @@ function drawNom(numb) { // Takes a given number and draw from the array that nu
     do{
         confirmation = true;
 
-        rand = getRndInteger(numb)
+        rand = getRndInteger()
         
         for (var j = 0 ; j <= i ; j++) { // Checks if the rand number was already used. So it doesn't draw the same nomination twice.
             if (randList[j] == rand) {
@@ -246,16 +254,19 @@ function drawNom(numb) { // Takes a given number and draw from the array that nu
             randList.push(rand)
             i++
         }
-    }while (i!=numb)
+    }while (i<numb)
+    
     drawList[i+1] = numb + " nominations were drawn"
     drawList = drawList.join("\n");    
     return drawList
 
 }
 
-function getRndInteger(max) { // Creates a random number between 0 and the number of nominations, including itself
-    max=max+1
-    return Math.floor(Math.random() * (max - 0) ) + 0;
+function getRndInteger() { // Creates a random number between 0 and the number of nominations, including itself
+        do {
+            var rand = Math.floor((Math.random() * 100)); // This creates a number between 0 and 99
+        } while (rand > numNom)
+        return rand
 }
 
 function removeNom(nickname) {
@@ -263,7 +274,9 @@ function removeNom(nickname) {
     for (var i = 0 ; i <= numNom ; i++) {
         if (nameList[i] == nickname) {
             clearNom=true
-            for (var l = i ; l <= (numNom-(i+1)) ; l++) {
+            
+            /*
+            for (var l = i ; l <= numNom ; l++) {
                 nameList[l] = nameList[l+1]
                 linkList[l] = linkList[l+1]
                 nomList[l] = nomList[l+1]
@@ -271,6 +284,10 @@ function removeNom(nickname) {
             nameList.pop()
             linkList.pop()
             nomList.pop()
+            */
+            nameList.splice(i,1)
+            linkList.splice(i,1)
+            nomList.splice(i,1)
             numNom--
         }
         
